@@ -1,11 +1,11 @@
 class CreateStocks < ActiveRecord::Migration[5.2]
   def change
     create_table :stocks do |t|
-      t.string :company_symbol
-      t.string :company_name
+      t.string :symbol
+      t.string :companyName
       t.string :exchange
       t.string :website
-      t.string :ceo
+      t.string :CEO
       t.string :sector
       t.string :description
       t.integer :price

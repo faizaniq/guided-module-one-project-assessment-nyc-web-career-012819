@@ -15,11 +15,12 @@ def gets_company_info(symbol)
   info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{symbol}/company")
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{symbol}/price")
-  price_hash = JSON.parse(price_string)
+  stock_price = JSON.parse(price_string)
+  new_stock = Stock.find_or_create_by(symbol: symbol)
   info_hash.each do |key, value|
     if key == "symbol" ||key == "companyName" ||key == "exchange" ||key == "website" ||key == "description" ||key == "CEO" ||key == "sector"
+      new_stock.update_attributes("#{key}": "#{value}")
       puts "#{key} : #{value}"
-      Stock.find_or_create_by("#{key}": "#{value}")
     end
   end
   # info_hash.each do |key, value|
@@ -27,7 +28,8 @@ def gets_company_info(symbol)
   #     new_stock = Stock.find_or_create_by("#{key}": "#{value}")
   #   end
   # end
-  puts "Price : #{price_hash}"
+  puts "Price : #{stock_price}"
+  new_stock.update_attributes(price: "#{stock_price}")
   main_menu
 end
 
@@ -51,6 +53,9 @@ def trader_b(buy)
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{buy}/price")
   price_hash = JSON.parse(price_string)
+  #binding.pry
+  current_stock_id = Stock.find_by(symbol: buy)[0]
+  buy_stock = Purchase.find_or_create_by(stock_id: current_stock_id)
   info_hash.each do |key, value|
     if key == "symbol" ||key == "companyName" ||key == "exchange"
       puts "#{key} : #{value}"
@@ -64,32 +69,33 @@ def trader_b(buy)
   puts "Would you like to place another order?"
   answer = gets.chomp.downcase
   if answer == "yes" ||answer == "y"
+    buy_stock.update_attributes(quantity_owned: quantity)
     trade_menu
   elsif answer == "no" ||answer == "n"
     main_menu
   end
 end
 
-def trader_s(sell)
-  info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/company")
-  info_hash = JSON.parse(info_string)
-  price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/price")
-  price_hash = JSON.parse(price_string)
-  info_hash.each do |key, value|
-    if key == "symbol" ||key == "companyName" ||key == "exchange"
-      puts "#{key} : #{value}"
-    end
-  end
-  puts "Price : #{price_hash}"
-  puts "How many would you like to sell?"
-  price = price_hash.to_i
-  quantity = gets.chomp.to_i
-  puts "Order total : #{(price*quantity)}"
-  puts "Would you like to place another order?"
-  answer = gets.chomp.downcase
-  if answer == "yes" ||answer == "y"
-    trade_menu
-  elsif answer == "no" ||answer == "n"
-    main_menu
-  end
-end
+# def trader_s(sell)
+#   info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/company")
+#   info_hash = JSON.parse(info_string)
+#   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/price")
+#   price_hash = JSON.parse(price_string)
+#   info_hash.each do |key, value|
+#     if key == "symbol" ||key == "companyName" ||key == "exchange"
+#       puts "#{key} : #{value}"
+#     end
+#   end
+#   puts "Price : #{price_hash}"
+#   puts "How many would you like to sell?"
+#   price = price_hash.to_i
+#   quantity = gets.chomp.to_i
+#   puts "Order total : #{(price*quantity)}"
+#   puts "Would you like to place another order?"
+#   answer = gets.chomp.downcase
+#   if answer == "yes" ||answer == "y"
+#     trade_menu
+#   elsif answer == "no" ||answer == "n"
+#     main_menu
+#   end
+# end

@@ -62,7 +62,7 @@ end
 
 def buy
   puts "Enter symbol of the stock you like to buy"
-  gets.chomp.downcase
+  gets.chomp.upcase
 end
 
 def sell
