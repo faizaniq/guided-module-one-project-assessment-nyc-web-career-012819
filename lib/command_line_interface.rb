@@ -40,15 +40,17 @@ end
 
 def enter_name
   puts "Please enter your name"
-  input_name = gets.chomp.downcase
+  name = gets.chomp.downcase
+  new_user = User.find_or_create_by(name: name)
   puts "Would you like to add funds to your account?"
   answer = gets.chomp.downcase
-  if answer == "y"
+  if answer == "yes" ||answer == "y"
     puts "How much would you like to add?"
     input_funds = gets.chomp
-    User.find_or_create_by(name: input_name, funds: input_funds)
+      # binding.pry
+    new_user.update_attributes(funds: (new_user.funds.to_i + input_funds.to_i))
     main_menu
-  elsif answer == "n"
+  elsif answer == "no" ||answer == "n"
     main_menu
   end
 end
@@ -58,12 +60,24 @@ def symbol
   gets.chomp.downcase
 end
 
+def buy
+  puts "Enter symbol of the stock you like to buy"
+  gets.chomp.downcase
+end
+
+def sell
+  puts "Enter symbol of the stock you like to sell"
+  gets.chomp.downcase
+end
+###############################################################################
+#MENU
 def main_menu
   prompt = TTY::Prompt.new
   menu_choice = prompt.select("What would you like to do?", marker: ">") do |menu|
     menu.choice "Research"
     menu.choice "Portfolio"
     menu.choice "Trade"
+    menu.choice "New User"
   end
   if menu_choice == "Research"
     research_menu
@@ -71,6 +85,8 @@ def main_menu
     gets_portfolio
   elsif menu_choice == "Trade"
     trade_menu
+  elsif menu_choice == "New User"
+    enter_name
   end
 end
 
@@ -79,21 +95,47 @@ def research_menu
   menu_choice = prompt.select("How would you like to research?", marker: ">") do |menu|
     menu.choice "Search by Symbol"
     menu.choice "Check Most Active Stocks"
+    menu.choice "Main Menu"
   end
   if menu_choice == "Search by Symbol"
     gets_company_info(symbol)
   elsif menu_choice == "Check Most Active Stocks"
     gets_active_stocks
+  elsif menu_choice == "Main Menu"
+    main_menu
   end
 end
-# def menu
-#   prompt.select("What would you like to do?", ["Research A Company", "Check My Holdings", "Buy/Sell"])
-# end
 
-#
-# def research
-#   if menu.choice = "Research A Company"
-#     puts "What company would you like to research?"
+def trade_menu
+  prompt = TTY::Prompt.new
+  menu_choice = prompt.select("Select a trade type", marker: ">") do |menu|
+    menu.choice "Buy"
+    menu.choice "Sell"
+    menu.choice "Main Menu"
+  end
+  if menu_choice == "Buy"
+    # puts "Enter symbol of the stock you like to buy"
+    # buy = gets.chomp.downcase
+    trader_b(buy)
+  elsif menu_choice == "Sell"
+    trader_s(sell)
+  elsif menu_choice == "Main Menu"
+    main_menu
+  end
+end
+
+# def portfolio_menu
+#   prompt = TTY::Prompt.new
+#   menu_choice = prompt.select("Select a trade type", marker: ">") do |menu|
+#     menu.choice "Buy"
+#     menu.choice "Main Menu"
 #   end
-#   gets.chomp.downcase
+#   if menu_choice == "Buy"
+#     buy_stock
+#   elsif menu_choice == "Sell"
+#     sell_stock
+#   elsif menu_choice == "Main Menu"
+#     main_menu
+#   end
 # end
+#
