@@ -80,6 +80,7 @@ def sell
 end
 
 def gets_portfolio
+  @new_user.purchases.reload
   @new_user.purchases.each do |purchase|
    # binding.pry
    new_stock_id = purchase.stock_id
@@ -89,7 +90,9 @@ def gets_portfolio
     puts "Stock : #{new_symbol}"
     puts "Price: #{new_price}"
     puts "Quantity Owned: #{qty_owned}"
+    puts "Total : #{new_price}*#{qty_owned}"
   end
+  @new_user.purchases.reload
   # main_menu
 end
 
