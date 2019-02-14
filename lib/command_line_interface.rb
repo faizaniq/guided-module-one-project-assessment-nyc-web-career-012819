@@ -32,7 +32,7 @@
 #    ||\\$//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\\$//||
 #    ||====================================================================||"
 
-new_user = ''
+
 
 def greet
   puts "Welcome to Stock Trader"
@@ -41,25 +41,27 @@ end
 def enter_name_and_funds
   puts "Please enter your name"
   name = gets.chomp.downcase
-  new_user = User.find_or_create_by(name: name)
+  @new_user = User.find_or_create_by(name: name)
+  puts "Current Funds : #{@new_user.funds.to_f}"
   puts "Would you like to add funds to your account?"
   answer = gets.chomp.downcase
   if answer == "yes" ||answer == "y"
     puts "How much would you like to add?"
     input_funds = gets.chomp
       # binding.pry
-    new_user.update_attributes(funds: (new_user.funds.to_i + input_funds.to_i))
-    main_menu(new_user)
+    @new_user.update_attributes(funds: (@new_user.funds.to_f + input_funds.to_f))
+    main_menu
   elsif answer == "no" ||answer == "n"
-    main_menu(new_user)
+    main_menu
   end
+  @new_user
 end
 
-def add_funds(new_user)
+def add_funds
   puts "How much would you like to add?"
   input_funds = gets.chomp
     # binding
-  new_user.update_attributes(funds: (new_user.funds.to_i + input_funds.to_i))
+  @new_user.update_attributes(funds: (@new_user.funds.to_f + input_funds.to_f))
 end
 
 def symbol
@@ -78,19 +80,25 @@ def sell
 end
 
 def gets_portfolio
-  Purchase.find_each do |purchase|
-    if  Purchase.user_id == new_user.id
-      puts "#{new_user.name}"
-    end
+  @new_user.purchases.each do |purchase|
+   # binding.pry
+   new_stock_id = purchase.stock_id
+   new_symbol = Stock.find_by(id: new_stock_id).symbol
+   new_price = Stock.find_by(id: new_stock_id).price.to_f
+   qty_owned = purchase.quantity_owned.to_i
+    puts "Stock : #{new_symbol}"
+    puts "Price: #{new_price}"
+    puts "Quantity Owned: #{qty_owned}"
   end
+  # main_menu
 end
 
 
 ###############################################################################
 #MENU
-def main_menu(new_user)
+def main_menu
   prompt = TTY::Prompt.new
-  menu_choice = prompt.select("What would you like to do?", marker: ">") do |menu|
+  menu_choice = prompt.select("What would you like to do?", marker: "$") do |menu|
     menu.choice "Research"
     menu.choice "Portfolio"
     menu.choice "Trade"
@@ -100,8 +108,9 @@ def main_menu(new_user)
     research_menu
   elsif menu_choice == "Portfolio"
     gets_portfolio
+    main_menu
   elsif menu_choice == "Trade"
-    trade_menu(new_user)
+    trade_menu
   elsif menu_choice == "New User"
     enter_name_and_funds
   end
@@ -109,7 +118,7 @@ end
 
 def research_menu
   prompt = TTY::Prompt.new
-  menu_choice = prompt.select("How would you like to research?", marker: ">") do |menu|
+  menu_choice = prompt.select("How would you like to research?", marker: "$") do |menu|
     menu.choice "Search by Symbol"
     menu.choice "Check Most Active Stocks"
     menu.choice "Main Menu"
@@ -123,21 +132,20 @@ def research_menu
   end
 end
 
-def trade_menu(new_user)
+def trade_menu
   prompt = TTY::Prompt.new
-  menu_choice = prompt.select("Select a trade type", marker: ">") do |menu|
+  menu_choice = prompt.select("Select a trade type", marker: "$") do |menu|
     menu.choice "Buy"
     menu.choice "Sell"
     menu.choice "Main Menu"
   end
   if menu_choice == "Buy"
-    trader_b(buy, new_user)
+    trader_b(buy)
   elsif menu_choice == "Sell"
     trader_s(sell)
   elsif menu_choice == "Main Menu"
     main_menu
   end
-
 end
 
 # def portfolio_menu

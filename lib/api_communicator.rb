@@ -30,7 +30,7 @@ def gets_active_stocks
   main_menu
 end
 
-def trader_b(buy, new_user)
+def trader_b(buy)
   info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{buy}/company")
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{buy}/price")
@@ -45,30 +45,30 @@ def trader_b(buy, new_user)
   current_stock_id = Stock.find_by(symbol: buy).id
   #  binding.pry
   current_stock_price = Stock.find_by(symbol: buy).price
-  new_purchase = Purchase.find_or_create_by(stock_id: current_stock_id, price: current_stock_price, user_id: new_user.id)
+  buy_purchase = Purchase.find_or_create_by(stock_id: current_stock_id, price: current_stock_price, user_id: @new_user.id)
   info_hash.each do |key, value|
     if key == "symbol" ||key == "companyName" ||key == "exchange"
       puts "#{key} : #{value}"
     end
   end
   puts "Price : #{price_hash}"
-  puts "Funds Balance : #{new_user.funds.to_i}"
+  puts "Current Funds Balance : #{@new_user.funds.to_f}"
   puts "How many would you like to buy?"
-  price = price_hash.to_i
   quantity = gets.chomp.to_i
+  price = price_hash.to_f
   total_order = price*quantity
-  #binding.pry
-  funds_change = (new_user.funds.to_i - total_order)
-  if funds_change < price ||funds_change < total_order
+  funds_change = (@new_user.funds.to_f - total_order.to_f)
+  if funds_change <= 0
     puts "Insufficient funds, please add funds to your account"
     puts "Order total : #{total_order}"
-    puts "Funds Balance : #{new_user.funds.to_i}"
-    add_funds(new_user)
-    trade_menu(new_user)
+    puts "Current Funds Balance : #{@new_user.funds.to_f}"
+    add_funds
+    trade_menu
   else
-    funds_balance = new_user.update_attributes(funds: funds_balance)
+    @new_user.update_attributes(funds: funds_change)
+    buy_purchase.update_attributes(quantity_owned: (buy_purchase.quantity_owned.to_i + quantity))
     puts "Order total : #{total_order}"
-    new_purchase.update_attributes(quantity_owned: (new_purchase.quantity_owned.to_i + quantity))
+    puts "Updated Funds Balance : #{funds_change}"
   end
   puts "Would you like to place another order?"
   answer = gets.chomp.downcase
@@ -84,8 +84,7 @@ def trader_s(sell)
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/price")
   price_hash = JSON.parse(price_string)
-  sell_stock = Stock.find_by(symbol: sell)
-  # binding.pry
+  sell_stock = Stock.find_by(symbol: sell.upcase)
   info_hash.each do |key, value|
     if key == "symbol" ||key == "companyName" ||key == "exchange"
       puts "#{key} : #{value}"
@@ -93,11 +92,21 @@ def trader_s(sell)
   end
   puts "Price : #{price_hash}"
   puts "How many would you like to sell?"
-  price = price_hash.to_i
+  price = price_hash.to_f
   quantity = gets.chomp.to_i
+  if quantity < 1
+    puts "Please enter a valid quantity"
+  end
   total_order = price*quantity
-  puts "Order total : #{total_order}"
-  funds_balance = new_user.update_attributes(funds: (new_user.funds + total_order))
+  puts "Order total : #{total_order.to_f}"
+  funds_balance = @new_user.update_attributes(funds: (@new_user.funds.to_f + total_order.to_f))
+  sell_purchase = Purchase.find_by(stock_id: sell_stock.id, user_id: @new_user.id)
+  if (sell_purchase.quantity_owned - quantity) <= 0
+    sell_purchase.destroy
+  else
+    sell_purchase.update_attributes(quantity_owned: sell_purchase.quantity_owned - quantity)
+  end
+  puts "New Funds Balance : #{@new_user.funds.to_f}"
   puts "Would you like to place another order?"
   answer = gets.chomp.downcase
   if answer == "yes" ||answer == "y"
