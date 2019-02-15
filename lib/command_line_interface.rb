@@ -6,7 +6,7 @@
 #     /$$  \ $$   | $$  | $$  | $$| $$    $$| $$\  $$          | $$   | $$  \ $$| $$  | $$| $$  | $$| $$      | $$  \ $$
 #    |  $$$$$$/   | $$  |  $$$$$$/|  $$$$$$/| $$ \  $$         | $$   | $$  | $$| $$  | $$| $$$$$$$/| $$$$$$$$| $$  | $$
 #     \______/    |__/   \______/  \______/ |__/  \__/         |__/   |__/  |__/|__/  |__/|_______/ |________/|__/  |__/"
-#
+
 #
 # puts "||====================================================================||
 #       ||//$\\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//$\\||
@@ -35,32 +35,35 @@
 
 
 def greet
-  puts "Welcome to Stock Trader"
+  puts "Welcome to Stock Trader".rjust(65)
 end
 
 def enter_name_and_funds
   puts "Please enter your name"
   name = gets.chomp.downcase
   @new_user = User.find_or_create_by(name: name)
+  system 'clear'
   puts "Current Funds : #{@new_user.funds.to_f}"
   puts "Would you like to add funds to your account?"
   answer = gets.chomp.downcase
   if answer == "yes" ||answer == "y"
+    system 'clear'
     puts "How much would you like to add?"
     input_funds = gets.chomp
-      # binding.pry
+    system 'clear'
     @new_user.update_attributes(funds: (@new_user.funds.to_f + input_funds.to_f))
     main_menu
   elsif answer == "no" ||answer == "n"
+    system 'clear'
     main_menu
   end
+  system 'clear'
   @new_user
 end
 
 def add_funds
   puts "How much would you like to add?"
   input_funds = gets.chomp
-    # binding
   @new_user.update_attributes(funds: (@new_user.funds.to_f + input_funds.to_f))
 end
 
@@ -80,20 +83,20 @@ def sell
 end
 
 def gets_portfolio
+  binding.pry
   @new_user.purchases.reload
   @new_user.purchases.each do |purchase|
-   # binding.pry
    new_stock_id = purchase.stock_id
    new_symbol = Stock.find_by(id: new_stock_id).symbol
    new_price = Stock.find_by(id: new_stock_id).price.to_f
    qty_owned = purchase.quantity_owned.to_i
     puts "Stock : #{new_symbol}"
-    puts "Price: #{new_price}"
-    puts "Quantity Owned: #{qty_owned}"
-    puts "Total : #{new_price}*#{qty_owned}"
+    puts "Price : #{new_price}"
+    puts "Quantity Owned : #{qty_owned}"
+    puts "Total : #{new_price*qty_owned}"
+    puts "\n"
   end
   @new_user.purchases.reload
-  # main_menu
 end
 
 
@@ -108,13 +111,17 @@ def main_menu
     menu.choice "New User"
   end
   if menu_choice == "Research"
+    system 'clear'
     research_menu
   elsif menu_choice == "Portfolio"
+    system 'clear'
     gets_portfolio
     main_menu
   elsif menu_choice == "Trade"
+    system 'clear'
     trade_menu
   elsif menu_choice == "New User"
+    system 'clear'
     enter_name_and_funds
   end
 end
@@ -127,10 +134,13 @@ def research_menu
     menu.choice "Main Menu"
   end
   if menu_choice == "Search by Symbol"
+    system 'clear'
     gets_company_info(symbol)
   elsif menu_choice == "Check Most Active Stocks"
+    system 'clear'
     gets_active_stocks
   elsif menu_choice == "Main Menu"
+    system 'clear'
     main_menu
   end
 end
@@ -143,10 +153,13 @@ def trade_menu
     menu.choice "Main Menu"
   end
   if menu_choice == "Buy"
+    system 'clear'
     trader_b(buy)
   elsif menu_choice == "Sell"
+    system 'clear'
     trader_s(sell)
   elsif menu_choice == "Main Menu"
+    system 'clear'
     main_menu
   end
 end

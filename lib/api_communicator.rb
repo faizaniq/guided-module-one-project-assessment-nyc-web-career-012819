@@ -3,6 +3,7 @@ require 'json'
 require 'pry'
 
 def gets_company_info(symbol)
+  system 'clear'
   info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{symbol}/company")
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{symbol}/price")
@@ -18,19 +19,22 @@ end
 
 
 def gets_active_stocks
-  active_string = RestClient.get("https://api.iextrading.com/1.0/stock/market/list/gainers")
+  system 'clear'
+  active_string = RestClient.get("https://api.iextrading.com/1.0/stock/market/list/mostactive")
   active_hash = JSON.parse(active_string)
   active_hash.each do |info|
     info.each do |key, value|
       if key == "symbol" ||key == "companyName" ||key == "open" ||key == "close" ||key == "week52Low" ||key == "week52High"
         puts "#{key} : #{value}"
       end
+      #puts "\n"
     end
   end
   main_menu
 end
 
 def trader_b(buy)
+  system 'clear'
   info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{buy}/company")
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{buy}/price")
@@ -73,13 +77,16 @@ def trader_b(buy)
   puts "Would you like to place another order?"
   answer = gets.chomp.downcase
   if answer == "yes" ||answer == "y"
+    system 'clear'
     trade_menu
   elsif answer == "no" ||answer == "n"
+    system 'clear'
     main_menu
   end
 end
 
 def trader_s(sell)
+  system 'clear'
   info_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/company")
   info_hash = JSON.parse(info_string)
   price_string = RestClient.get("https://api.iextrading.com/1.0/stock/#{sell}/price")
@@ -91,14 +98,11 @@ def trader_s(sell)
     end
   end
   puts "Price : #{price_hash}"
+  puts "Quantity Owned : #{@new_user.purchases[0].quantity_owned}"
   puts "How many would you like to sell?"
   price = price_hash.to_f
   quantity = gets.chomp.to_i
-  if quantity < 1
-    puts "Please enter a valid quantity"
-  end
   total_order = price*quantity
-  puts "Order total : #{total_order.to_f}"
   funds_balance = @new_user.update_attributes(funds: (@new_user.funds.to_f + total_order.to_f))
   sell_purchase = Purchase.find_by(stock_id: sell_stock.id, user_id: @new_user.id)
   if (sell_purchase.quantity_owned - quantity) <= 0
@@ -110,8 +114,10 @@ def trader_s(sell)
   puts "Would you like to place another order?"
   answer = gets.chomp.downcase
   if answer == "yes" ||answer == "y"
+    system 'clear'
     trade_menu
   elsif answer == "no" ||answer == "n"
+    system 'clear'
     main_menu
   end
 end
